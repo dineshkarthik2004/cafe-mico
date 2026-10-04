@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { io } from 'socket.io-client';
-import { Clock, ChefHat, Check, LogOut, Search, Filter } from 'lucide-react';
+import { Clock, ChefHat, Check, LogOut, Search, Filter, Volume2, VolumeX } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { api } from '../../services/api';
 import { useAuthStore } from '../../stores/authStore';
@@ -9,11 +9,41 @@ import { useNavigate } from 'react-router-dom';
 
 const ORDER_STATUSES = ['PENDING', 'ACCEPTED', 'PREPARING', 'READY'];
 
+const playOrderChime = () => {
+  try {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+
+    const notes = [523.25, 659.25, 783.99]; // C5, E5, G5 chime
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+
+      const startTime = ctx.currentTime + idx * 0.15;
+      gain.gain.setValueAtTime(0.3, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.4);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(startTime);
+      osc.stop(startTime + 0.4);
+    });
+  } catch (e) {
+    console.warn('Audio chime error:', e);
+  }
+};
+
 const KitchenDashboard = () => {
   const { user, isAuthenticated, logout } = useAuthStore();
   const navigate = useNavigate();
   const [filter, setFilter] = useState('all'); // all, PENDING, ACCEPTED, PREPARING
   const [search, setSearch] = useState('');
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   useEffect(() => {
     if (!isAuthenticated || (user?.role !== 'KITCHEN' && user?.role !== 'ADMIN')) {
@@ -40,20 +70,21 @@ const KitchenDashboard = () => {
     });
 
     socket.on('new_order', (data) => {
-      toast('New Order Received!', { icon: '🔥', duration: 4000 });
-      // Play a sound here in a real app
+      toast('🔥 New Order Received!', { duration: 5000 });
+      if (soundEnabled) playOrderChime();
       refetch();
     });
 
     socket.on('items_added', (data) => {
-      toast(`Items added to ${data.displayName}'s order!`, { icon: '➕' });
+      toast(`➕ Items added to ${data.displayName || 'table'}'s order!`, { duration: 5000 });
+      if (soundEnabled) playOrderChime();
       refetch();
     });
 
     return () => {
       socket.disconnect();
     };
-  }, [refetch]);
+  }, [refetch, soundEnabled]);
 
   const updateOrderStatus = async (orderId: string, status: string) => {
     try {
@@ -101,7 +132,26 @@ const KitchenDashboard = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* Audio Alert Toggle */}
+            <button 
+              onClick={() => {
+                const next = !soundEnabled;
+                setSoundEnabled(next);
+                if (next) playOrderChime();
+                toast(next ? 'Order Sound Alert Enabled' : 'Order Sound Alert Muted');
+              }}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                soundEnabled 
+                  ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20' 
+                  : 'bg-surface text-text-muted border-border-subtle hover:text-text-primary'
+              }`}
+              title="Click to toggle order sound alert"
+            >
+              {soundEnabled ? <Volume2 size={16} className="animate-pulse" /> : <VolumeX size={16} />}
+              <span>{soundEnabled ? 'Sound ON' : 'Muted'}</span>
+            </button>
+
             <div className="relative hidden md:block">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
               <input 
@@ -109,14 +159,14 @@ const KitchenDashboard = () => {
                 placeholder="Search orders..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="input py-2 pl-9 pr-4 text-sm w-64 bg-surface"
+                className="input py-2 !pl-9 pr-4 text-sm w-64 bg-surface"
               />
             </div>
             <div className="flex items-center gap-2 text-sm text-text-secondary border-l border-border-subtle pl-4 ml-2">
               <span className="w-2 h-2 rounded-full bg-green-500"></span>
               {user?.name}
             </div>
-            <button onClick={handleLogout} className="p-2 text-text-muted hover:text-red-400 transition-colors">
+            <button onClick={handleLogout} className="p-2 text-text-muted hover:text-red-400 transition-colors" title="Logout">
               <LogOut size={20} />
             </button>
           </div>

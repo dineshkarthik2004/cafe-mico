@@ -155,16 +155,21 @@ const AdminOrdersPage = () => {
             </div>
 
             <div className="space-y-4 mb-6 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
-              {selectedSession.orders.map((order: any, idx: number) => (
+              {selectedSession.orders.map((order: any) => (
                 <div key={order.id} className="border-b border-border-subtle pb-3">
                   <div className="text-xs font-bold text-text-muted mb-2">Order {order.orderNumber}</div>
                   {order.items.map((item: any) => (
-                    <div key={item.id} className="flex justify-between text-sm mb-1">
+                    <div key={item.id} className="flex justify-between text-sm mb-2">
                       <div>
-                        <span>{item.quantity}x {item.menuItem.name}</span>
+                        <span className="font-semibold">{item.quantity}x {item.menuItem.name}</span>
                         {item.customizations?.length > 0 && (
                           <div className="text-xs text-text-muted ml-4">
-                            {item.customizations.map((c:any) => c.optionName).join(', ')}
+                            {Array.from(new Set(item.customizations.map((c:any) => c.optionName))).join(', ')}
+                          </div>
+                        )}
+                        {item.specialInstructions && (
+                          <div className="text-xs font-semibold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded mt-1 ml-4 inline-block border border-amber-400/20">
+                            Note: "{item.specialInstructions}"
                           </div>
                         )}
                       </div>

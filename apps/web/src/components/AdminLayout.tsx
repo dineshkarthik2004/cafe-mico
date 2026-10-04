@@ -70,7 +70,7 @@ const AdminLayout = ({ children, title }: { children: React.ReactNode, title?: s
 
       {/* Main Content */}
       <main className="flex-1 lg:ml-64 flex flex-col min-h-screen">
-        <header className="bg-glass sticky top-0 z-10 border-b border-border-subtle px-6 py-4 flex items-center justify-between lg:justify-end">
+        <header className="bg-bg-secondary/95 backdrop-blur-md sticky top-0 z-30 border-b border-border-subtle px-6 py-4 flex items-center justify-between lg:justify-end">
           <h2 className="text-xl font-bold lg:hidden">{title}</h2>
           
           <div className="flex items-center gap-4">

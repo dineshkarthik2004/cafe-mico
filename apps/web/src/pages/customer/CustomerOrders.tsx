@@ -190,7 +190,12 @@ const CustomerOrders = () => {
                           <p className={`font-medium ${getStatusColor(item.status)}`}>{item.menuItem.name}</p>
                           {item.customizations?.length > 0 && (
                             <p className="text-xs text-text-muted mt-0.5">
-                              {item.customizations.map((c:any) => c.optionName).join(', ')}
+                              {Array.from(new Set(item.customizations.map((c:any) => c.optionName))).join(', ')}
+                            </p>
+                          )}
+                          {item.specialInstructions && (
+                            <p className="text-xs font-semibold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded mt-1 inline-block border border-amber-400/20">
+                              Note: "{item.specialInstructions}"
                             </p>
                           )}
                         </div>

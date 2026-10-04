@@ -14,16 +14,24 @@ const ItemModal: React.FC<ItemModalProps> = ({ item, onClose }) => {
   const [quantity, setQuantity] = useState(1);
   const [specialInstructions, setSpecialInstructions] = useState('');
   
+  // Deduplicate groups by name to prevent repetitive "Choose Variant" sections
+  const uniqueGroups = React.useMemo(() => {
+    if (!item.customizationGroups) return [];
+    const seen = new Set<string>();
+    return item.customizationGroups.filter((g: any) => {
+      if (seen.has(g.name)) return false;
+      seen.add(g.name);
+      return true;
+    });
+  }, [item.customizationGroups]);
+
   // Customization state: map of groupId -> selected optionIds
   const [selectedCustomizations, setSelectedCustomizations] = useState<Record<string, string[]>>(() => {
     const initial: Record<string, string[]> = {};
-    if (item.customizationGroups) {
-      item.customizationGroups.forEach((group: any) => {
-        // Find default options
-        const defaults = group.options.filter((o: any) => o.isDefault).map((o: any) => o.id);
-        initial[group.id] = defaults;
-      });
-    }
+    uniqueGroups.forEach((group: any) => {
+      const defaults = group.options.filter((o: any) => o.isDefault).map((o: any) => o.id);
+      initial[group.id] = defaults.length > 0 ? defaults : [group.options[0]?.id].filter(Boolean);
+    });
     return initial;
   });
 
@@ -53,8 +61,8 @@ const ItemModal: React.FC<ItemModalProps> = ({ item, onClose }) => {
   let customizationPrice = 0;
   const selectedOptionObjects: any[] = [];
   
-  if (item.customizationGroups) {
-    item.customizationGroups.forEach((group: any) => {
+  if (uniqueGroups.length > 0) {
+    uniqueGroups.forEach((group: any) => {
       const selectedIds = selectedCustomizations[group.id] || [];
       selectedIds.forEach(id => {
         const option = group.options.find((o: any) => o.id === id);
@@ -74,8 +82,8 @@ const ItemModal: React.FC<ItemModalProps> = ({ item, onClose }) => {
 
   const handleAddToCart = () => {
     // Validate required groups
-    if (item.customizationGroups) {
-      for (const group of item.customizationGroups) {
+    if (uniqueGroups.length > 0) {
+      for (const group of uniqueGroups) {
         if (group.isRequired) {
           const selected = selectedCustomizations[group.id] || [];
           if (selected.length < group.minSelect) {
@@ -148,7 +156,7 @@ const ItemModal: React.FC<ItemModalProps> = ({ item, onClose }) => {
             </div>
 
             {/* Customization Groups */}
-            {item.customizationGroups?.map((group: any) => (
+            {uniqueGroups.map((group: any) => (
               <div key={group.id} className="mb-6">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-lg">{group.name}</h3>
