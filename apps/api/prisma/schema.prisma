@@ -1,0 +1,349 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  KITCHEN
+  STAFF
+  CASHIER
+}
+
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  DISABLED
+}
+
+enum SessionStatus {
+  ACTIVE
+  BILL_REQUESTED
+  CLOSED
+}
+
+enum OrderStatus {
+  PENDING
+  ACCEPTED
+  PREPARING
+  READY
+  SERVED
+  CANCELLED
+}
+
+enum OrderItemStatus {
+  PENDING
+  ACCEPTED
+  PREPARING
+  READY
+  SERVED
+  CANCELLED
+}
+
+enum FoodType {
+  VEG
+  NON_VEG
+  EGG
+}
+
+enum BillingStatus {
+  PENDING
+  GENERATED
+  PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  UPI
+  CARD
+  ONLINE
+}
+
+// ─── Users (Staff/Admin/Kitchen) ─────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  auditLogs AuditLog[]
+
+  @@map("users")
+}
+
+// ─── Cafe Settings ───────────────────────────────────
+
+model CafeSettings {
+  id              String  @id @default(uuid())
+  cafeName        String  @default("Cafe Mico")
+  tagline         String  @default("Good food. Good mood.")
+  location        String  @default("Dilsukhnagar, Hyderabad")
+  isOpen          Boolean @default(true)
+  taxEnabled      Boolean @default(true)
+  taxPercentage   Float   @default(5.0)
+  taxLabel        String  @default("GST")
+  serviceCharge   Float   @default(0.0)
+  currency        String  @default("INR")
+  currencySymbol  String  @default("₹")
+  openingTime     String  @default("10:00")
+  closingTime     String  @default("23:00")
+  orderPrefix     String  @default("MICO")
+  nextOrderNumber Int     @default(1001)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("cafe_settings")
+}
+
+// ─── Tables ──────────────────────────────────────────
+
+model Table {
+  id          String      @id @default(uuid())
+  tableNumber String      @unique
+  displayName String
+  qrToken     String      @unique @default(uuid())
+  status      TableStatus @default(AVAILABLE)
+  capacity    Int         @default(4)
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  sessions TableSession[]
+
+  @@map("tables")
+}
+
+// ─── Table Sessions ──────────────────────────────────
+
+model TableSession {
+  id              String        @id @default(uuid())
+  sessionToken    String        @unique @default(uuid())
+  tableId         String
+  table           Table         @relation(fields: [tableId], references: [id])
+  status          SessionStatus @default(ACTIVE)
+  billingStatus   BillingStatus @default(PENDING)
+  openedAt        DateTime      @default(now())
+  closedAt        DateTime?
+  customerCount   Int           @default(1)
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  orders Order[]
+  bill   Bill?
+
+  @@index([tableId])
+  @@index([status])
+  @@map("table_sessions")
+}
+
+// ─── Menu Categories ─────────────────────────────────
+
+model MenuCategory {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  image       String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items MenuItem[]
+
+  @@map("menu_categories")
+}
+
+// ─── Menu Items ──────────────────────────────────────
+
+model MenuItem {
+  id              String   @id @default(uuid())
+  name            String
+  slug            String   @unique
+  description     String?
+  price           Float
+  categoryId      String
+  category        MenuCategory @relation(fields: [categoryId], references: [id])
+  foodType        FoodType @default(VEG)
+  image           String?
+  isAvailable     Boolean  @default(true)
+  isBestseller    Boolean  @default(false)
+  isRecommended   Boolean  @default(false)
+  preparationTime Int      @default(15) // minutes
+  rating          Float?   @default(4.0)
+  ratingCount     Int      @default(0)
+  calories        Int?
+  tags            String[] @default([])
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  customizationGroups CustomizationGroup[]
+  orderItems          OrderItem[]
+
+  @@index([categoryId])
+  @@index([isAvailable])
+  @@map("menu_items")
+}
+
+// ─── Customization Groups ────────────────────────────
+
+model CustomizationGroup {
+  id         String   @id @default(uuid())
+  name       String   // e.g., "Choose Size", "Extra Add-ons"
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  isRequired Boolean  @default(false)
+  isMultiple Boolean  @default(false) // can select multiple?
+  minSelect  Int      @default(0)
+  maxSelect  Int      @default(1)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  options CustomizationOption[]
+
+  @@index([menuItemId])
+  @@map("customization_groups")
+}
+
+// ─── Customization Options ───────────────────────────
+
+model CustomizationOption {
+  id        String             @id @default(uuid())
+  name      String             // e.g., "Regular", "Large", "Extra Cheese"
+  groupId   String
+  group     CustomizationGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  price     Float              @default(0) // additional price
+  isDefault Boolean            @default(false)
+  isActive  Boolean            @default(true)
+  sortOrder Int                @default(0)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  orderItemCustomizations OrderItemCustomization[]
+
+  @@index([groupId])
+  @@map("customization_options")
+}
+
+// ─── Orders ──────────────────────────────────────────
+
+model Order {
+  id             String       @id @default(uuid())
+  orderNumber    String       @unique
+  tableSessionId String
+  tableSession   TableSession @relation(fields: [tableSessionId], references: [id])
+  status         OrderStatus  @default(PENDING)
+  subtotal       Float        @default(0)
+  tax            Float        @default(0)
+  discount       Float        @default(0)
+  total          Float        @default(0)
+  customerName   String?
+  customerPhone  String?
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  items OrderItem[]
+
+  @@index([tableSessionId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+// ─── Order Items ─────────────────────────────────────
+
+model OrderItem {
+  id                  String          @id @default(uuid())
+  orderId             String
+  order               Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId          String
+  menuItem            MenuItem        @relation(fields: [menuItemId], references: [id])
+  quantity            Int             @default(1)
+  unitPrice           Float           // price snapshot at time of order
+  totalPrice          Float           // unitPrice * quantity + customizations
+  specialInstructions String?
+  status              OrderItemStatus @default(PENDING)
+  isNew               Boolean         @default(true) // marks newly added items
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  customizations OrderItemCustomization[]
+
+  @@index([orderId])
+  @@index([menuItemId])
+  @@map("order_items")
+}
+
+// ─── Order Item Customizations ───────────────────────
+
+model OrderItemCustomization {
+  id                    String              @id @default(uuid())
+  orderItemId           String
+  orderItem             OrderItem           @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  customizationOptionId String
+  customizationOption   CustomizationOption @relation(fields: [customizationOptionId], references: [id])
+  optionName            String              // snapshot
+  optionPrice           Float               // price snapshot
+  createdAt             DateTime            @default(now())
+
+  @@index([orderItemId])
+  @@map("order_item_customizations")
+}
+
+// ─── Bills ───────────────────────────────────────────
+
+model Bill {
+  id              String        @id @default(uuid())
+  billNumber      String        @unique
+  tableSessionId  String        @unique
+  tableSession    TableSession  @relation(fields: [tableSessionId], references: [id])
+  subtotal        Float
+  taxAmount       Float
+  taxPercentage   Float
+  serviceCharge   Float         @default(0)
+  discount        Float         @default(0)
+  total           Float
+  paymentMethod   PaymentMethod?
+  paymentStatus   BillingStatus @default(PENDING)
+  paidAt          DateTime?
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("bills")
+}
+
+// ─── Audit Log ───────────────────────────────────────
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
