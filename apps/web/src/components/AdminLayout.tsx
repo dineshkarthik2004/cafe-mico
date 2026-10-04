@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Coffee, Grid, Receipt, Settings, LogOut, UtensilsCrossed } from 'lucide-react';
-import { useAuthStore } from '../../stores/authStore';
-import { api } from '../../services/api';
+import { useAuthStore } from '../stores/authStore';
+import { api } from '../services/api';
 
 const AdminLayout = ({ children, title }: { children: React.ReactNode, title?: string }) => {
   const { user, isAuthenticated, logout } = useAuthStore();

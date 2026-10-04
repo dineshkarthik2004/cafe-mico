@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Clock, Coffee, Search, ChevronLeft } from 'lucide-react';
-import { useCartStore } from '../../stores/cartStore';
-import { useSessionStore } from '../../stores/sessionStore';
-import { api } from '../../services/api';
+import { useCartStore } from '../stores/cartStore';
+import { useSessionStore } from '../stores/sessionStore';
+import { api } from '../services/api';
 
 interface CustomerLayoutProps {
   children: React.ReactNode;
