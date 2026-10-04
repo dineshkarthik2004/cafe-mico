@@ -36,7 +36,7 @@ const AdminLayout = ({ children, title }: { children: React.ReactNode, title?: s
       {/* Sidebar */}
       <aside className="w-64 bg-card border-r border-border-subtle flex flex-col hidden lg:flex fixed inset-y-0 z-20">
         <div className="p-6">
-          <h1 className="font-display text-2xl font-bold text-gradient mb-1">Cafe Admin</h1>
+          <h1 className="font-display text-2xl font-bold text-gradient mb-1">Cafe Mico</h1>
           <p className="text-xs text-text-muted">{user?.email}</p>
         </div>
 

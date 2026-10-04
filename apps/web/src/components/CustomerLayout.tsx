@@ -80,7 +80,7 @@ const CustomerLayout: React.FC<CustomerLayoutProps> = ({
       </aside>
 
       {/* Mobile Header */}
-      <header className="sticky top-0 z-30 lg:hidden glass">
+      <header className="sticky top-0 z-30 lg:hidden bg-bg-primary/95 backdrop-blur-md border-b border-border-subtle shadow-sm">
         <div className="px-4 py-3">
           {isSearchOpen && showSearch ? (
             <div className="flex items-center gap-2 animate-fadeIn">

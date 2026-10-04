@@ -43,7 +43,7 @@ const AdminLogin = () => {
           <div className="w-16 h-16 bg-gold/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-gold/30 shadow-glow">
             <ShieldCheck size={32} className="text-gold" />
           </div>
-          <h1 className="font-display text-3xl font-bold text-gradient mb-2">Cafe Admin</h1>
+          <h1 className="font-display text-3xl font-bold text-gradient mb-2">Cafe Mico</h1>
           <p className="text-text-secondary">Control panel access</p>
         </div>
 

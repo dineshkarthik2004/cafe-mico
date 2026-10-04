@@ -91,7 +91,7 @@ const CustomerMenu = () => {
     <CustomerLayout showSearch onSearch={setSearchQuery}>
       {/* Category Navigation (Horizontal scroll) */}
       {!searchQuery && (
-        <div className="sticky top-[60px] lg:top-0 z-20 bg-bg-primary/95 backdrop-blur border-b border-border-subtle py-3 px-4 -mx-4 lg:mx-0 overflow-x-auto hide-scrollbar">
+        <div className="sticky top-[53px] lg:top-0 z-20 bg-bg-primary/95 backdrop-blur-md border-b border-border-subtle py-3 px-4 -mx-4 lg:mx-0 overflow-x-auto hide-scrollbar shadow-sm">
           <div className="flex space-x-3 w-max">
             <button
               onClick={() => setActiveCategory('all')}

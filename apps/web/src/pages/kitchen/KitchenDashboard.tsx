@@ -9,29 +9,48 @@ import { useNavigate } from 'react-router-dom';
 
 const ORDER_STATUSES = ['PENDING', 'ACCEPTED', 'PREPARING', 'READY'];
 
+let sharedAudioCtx: AudioContext | null = null;
+
+const getAudioContext = () => {
+  try {
+    if (!sharedAudioCtx) {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioContextClass) {
+        sharedAudioCtx = new AudioContextClass();
+      }
+    }
+    if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
+      sharedAudioCtx.resume();
+    }
+  } catch (e) {
+    console.warn('AudioContext init error:', e);
+  }
+  return sharedAudioCtx;
+};
+
 const playOrderChime = () => {
   try {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
+    const ctx = getAudioContext();
+    if (!ctx) return;
 
-    const notes = [523.25, 659.25, 783.99]; // C5, E5, G5 chime
+    // Play 4-tone ascending bell chime (C5 -> E5 -> G5 -> C6)
+    const notes = [523.25, 659.25, 783.99, 1046.50];
     notes.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      osc.type = 'sine';
+      osc.type = 'triangle';
       osc.frequency.value = freq;
 
-      const startTime = ctx.currentTime + idx * 0.15;
-      gain.gain.setValueAtTime(0.3, startTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.4);
+      const startTime = ctx.currentTime + idx * 0.12;
+      gain.gain.setValueAtTime(0.5, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.45);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
 
       osc.start(startTime);
-      osc.stop(startTime + 0.4);
+      osc.stop(startTime + 0.45);
     });
   } catch (e) {
     console.warn('Audio chime error:', e);
@@ -118,7 +137,7 @@ const KitchenDashboard = () => {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="min-h-screen bg-bg-primary flex flex-col">
+    <div className="min-h-screen bg-bg-primary flex flex-col" onClick={getAudioContext} onTouchStart={getAudioContext}>
       {/* Top Navigation */}
       <header className="bg-card border-b border-border-subtle sticky top-0 z-40">
         <div className="px-6 py-4 flex items-center justify-between">

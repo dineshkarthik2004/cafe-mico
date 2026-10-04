@@ -134,10 +134,10 @@ const AdminMenuPage = () => {
   return (
     <AdminLayout title="Menu Management">
       
-      {/* Category Tabs & Add Actions Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+      {/* Sticky Action Header & Category Filters */}
+      <div className="sticky top-16 z-20 bg-bg-primary/95 backdrop-blur-md py-4 mb-6 border-b border-border-subtle flex flex-wrap items-center justify-between gap-4">
         {/* Category Filters */}
-        <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2 flex-1 min-w-[280px]">
+        <div className="flex gap-2 overflow-x-auto hide-scrollbar flex-1 min-w-[280px]">
           <button
             onClick={() => setActiveCategory('all')}
             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
@@ -199,14 +199,14 @@ const AdminMenuPage = () => {
               </div>
               
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="w-full text-left border-collapse min-w-[650px]">
                   <thead>
                     <tr className="text-text-muted text-sm border-b border-border-subtle bg-surface/30">
-                      <th className="py-3 px-4 font-medium">Item Name</th>
-                      <th className="py-3 px-4 font-medium">Type</th>
-                      <th className="py-3 px-4 font-medium">Price</th>
-                      <th className="py-3 px-4 font-medium">Status</th>
-                      <th className="py-3 px-4 font-medium text-right">Actions</th>
+                      <th className="py-3 px-4 font-medium w-[40%]">Item Name</th>
+                      <th className="py-3 px-4 font-medium w-[12%]">Type</th>
+                      <th className="py-3 px-4 font-medium w-[18%]">Price</th>
+                      <th className="py-3 px-4 font-medium w-[15%]">Status</th>
+                      <th className="py-3 px-4 font-medium w-[15%] text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -233,7 +233,7 @@ const AdminMenuPage = () => {
                         <td className="py-3 px-4">
                           <div className={`food-type-indicator ${item.foodType.toLowerCase().replace('_', '-')}`} />
                         </td>
-                        <td className="py-3 px-4 font-medium text-gold">₹{item.price}</td>
+                        <td className="py-3 px-4 font-bold text-gold text-base whitespace-nowrap">₹{item.price}</td>
                         <td className="py-3 px-4">
                           <button 
                             onClick={() => toggleAvailability(item)}
