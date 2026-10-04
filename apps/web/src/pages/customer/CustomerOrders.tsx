@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { io } from 'socket.io-client';
-import { Clock, RefreshCcw, CheckCircle2, ChevronRight, Receipt } from 'lucide-react';
+import { Clock, RefreshCcw, CheckCircle2, ChevronRight, Receipt, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { api } from '../../services/api';
 import { useSessionStore } from '../../stores/sessionStore';
 import CustomerLayout from '../../components/CustomerLayout';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -34,6 +34,8 @@ const getStatusBadge = (status: string) => {
 
 const CustomerOrders = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const showSuccessBanner = (location.state as any)?.orderPlaced;
   const { sessionId, tableName, clearSession } = useSessionStore();
   const [isRequestingBill, setIsRequestingBill] = useState(false);
 
@@ -110,6 +112,19 @@ const CustomerOrders = () => {
     <CustomerLayout title="Table Session">
       <div className="p-4 lg:p-8 max-w-3xl mx-auto pb-32">
         
+        {/* Order Confirmed Banner */}
+        {showSuccessBanner && (
+          <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center gap-3 animate-pageSlideIn shadow-glow">
+            <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
+              <CheckCircle2 size={24} />
+            </div>
+            <div>
+              <h3 className="font-bold text-emerald-400">Order Confirmed!</h3>
+              <p className="text-xs text-text-secondary">Your order has been sent to the kitchen. You can track live updates below.</p>
+            </div>
+          </div>
+        )}
+
         {/* Session Header */}
         <div className="glass rounded-xl p-5 mb-8 border border-border-subtle shadow-glow flex justify-between items-center">
           <div>

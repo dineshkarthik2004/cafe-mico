@@ -163,6 +163,7 @@ const ItemModal: React.FC<ItemModalProps> = ({ item, onClose }) => {
                     return (
                       <label 
                         key={option.id}
+                        onClick={() => handleOptionToggle(group.id, option.id, group.isMultiple, group.maxSelect)}
                         className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
                           isSelected 
                             ? 'border-gold bg-gold/5' 

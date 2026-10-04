@@ -57,7 +57,7 @@ const AdminLogin = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="input pl-10 bg-bg-card/50"
+                className="input !pl-10 bg-bg-card/50"
                 placeholder="admin@cafemico.com"
               />
             </div>
@@ -72,7 +72,7 @@ const AdminLogin = () => {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="input pl-10 bg-bg-card/50"
+                className="input !pl-10 bg-bg-card/50"
                 placeholder="••••••••"
               />
             </div>

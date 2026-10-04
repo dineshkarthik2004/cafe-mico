@@ -52,7 +52,7 @@ const CustomerCart = () => {
       
       clearCart();
       toast.success('Order placed successfully!');
-      navigate('/orders');
+      navigate('/orders', { state: { orderPlaced: true } });
       
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to place order');
