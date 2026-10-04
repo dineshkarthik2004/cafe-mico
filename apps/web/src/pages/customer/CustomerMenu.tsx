@@ -32,7 +32,7 @@ const CustomerMenu = () => {
           return; // Stay on page but show warning
         }
 
-        setTableData(table.qrToken, table.tableNumber, table.displayName);
+        setTableData(token, table.tableNumber, table.displayName);
 
         // Start or join session
         const sessionRes = await api.post('/session/start', { tableToken: token });
