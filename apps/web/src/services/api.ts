@@ -5,6 +5,21 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+// Attach JWT token from localStorage to every request
+api.interceptors.request.use((config) => {
+  const authData = localStorage.getItem('cafe-mico-auth');
+  if (authData) {
+    try {
+      const parsed = JSON.parse(authData);
+      const token = parsed?.state?.token;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch {}
+  }
+  return config;
+});
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {

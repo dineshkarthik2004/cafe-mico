@@ -24,7 +24,7 @@ const KitchenLogin = () => {
         return;
       }
 
-      login(res.data.user);
+      login(res.data.user, res.data.token);
       toast.success('Login successful');
       navigate('/kitchen');
     } catch (error: any) {
